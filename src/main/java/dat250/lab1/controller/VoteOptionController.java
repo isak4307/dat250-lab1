@@ -1,0 +1,22 @@
+package dat250.lab1.controller;
+
+import dat250.lab1.model.PollManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class VoteOptionController {
+    private PollManager pollManager;
+
+    public VoteOptionController(@Autowired PollManager pollManager) {
+        this.pollManager = pollManager;
+    }
+
+    @GetMapping("/voteOptions")
+    public ResponseEntity<String> getAllVoteOptions() {
+        return ResponseEntity.ok(pollManager.getAllVoteOptions().toString());
+    }
+
+}

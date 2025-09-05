@@ -12,6 +12,8 @@ public class Lab1Application {
 	public static void main(String[] args) {
 		SpringApplication.run(Lab1Application.class, args);
 	}
+	//TODO CHECK WHAT THE DIFFERNT JAVA ANNOTATIONS DO
+	//curl http://localhost:8080/
 	@GetMapping("/")
 	public String mainPage(){
 		return "HELLO World! <br> This is my submission for lab1";
