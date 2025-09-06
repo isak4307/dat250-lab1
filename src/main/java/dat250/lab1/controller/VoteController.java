@@ -46,4 +46,9 @@ public class VoteController {
         }
     }
 
+    @GetMapping("/votes")
+    public ResponseEntity<ArrayList<Vote>> getAllVotes() {
+        return ResponseEntity.ok(this.pollManager.getAllVotes());
+    }
+
 }

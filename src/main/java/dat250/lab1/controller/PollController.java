@@ -9,8 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-//TODO create votecounter for each vote
-//TODO presentationOrder must be worked on
+
 @RestController
 public class PollController {
     private PollManager pollManager;
@@ -20,8 +19,8 @@ public class PollController {
     }
 
     @GetMapping("/polls")
-    public ResponseEntity<String> getPolls() {
-        return ResponseEntity.ok("Polls: " + this.pollManager.getPolls().toString());
+    public ResponseEntity<HashSet<Poll>> getPolls() {
+        return ResponseEntity.ok(this.pollManager.getPolls());
     }
 
     @GetMapping("/polls/{pollId}/result")
@@ -64,7 +63,7 @@ public class PollController {
         //create voteOptions
         this.pollManager.createVoteOptions(poll);
         pollManager.createPoll(poll, creator);
-        return ResponseEntity.ok("Created poll: " + poll.toString());
+        return ResponseEntity.ok("Created poll: " + poll.getQuestion());
 
     }
 
@@ -106,19 +105,6 @@ public class PollController {
             }
         } else {
             return ResponseEntity.badRequest().body("Error: userId " + userId + " doesn't exist or pollId " + pollId + " doesn't exist");
-        }
-    }
-
-    // remember to delete poll, votes, voteoptions
-    @DeleteMapping("polls/{pollId}")
-    public ResponseEntity<String> deletePollById(@PathVariable int pollId) {
-        if (this.pollManager.getPollById(pollId) == null) {
-            return ResponseEntity.badRequest().body("Error: poll with id " + pollId + " doesn't exist");
-        }
-        if (this.pollManager.deletePollById(pollId)) {
-            return ResponseEntity.ok("Deleted poll with id:" + pollId);
-        } else {
-            return ResponseEntity.badRequest().body("Error: Unable to delete poll with id " + pollId);
         }
     }
 }

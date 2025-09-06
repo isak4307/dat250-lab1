@@ -3,11 +3,13 @@ package dat250.lab1.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Objects;
 
-public class Poll {
+public class Poll implements Serializable {
     private int id;
     private String question;
     private Instant publishedAt;
@@ -86,5 +88,17 @@ public class Poll {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Poll poll)) return false;
+        return Objects.equals(question, poll.question)
+                && Objects.equals(validUntil, poll.validUntil)
+                && Objects.equals(publishedAt, poll.publishedAt);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(question, validUntil, publishedAt);
+    }
 }

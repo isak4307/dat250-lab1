@@ -1,8 +1,10 @@
 package dat250.lab1.model;
 
+import java.io.Serializable;
 import java.time.Instant;
+import java.util.Objects;
 
-public class Vote {
+public class Vote implements Serializable {
     private int id = 0;
     private int userId;
     private int voteOptionId;
@@ -48,5 +50,20 @@ public class Vote {
                 "\n userId:" + this.userId +
                 "\n voteOptionId:" + this.voteOptionId +
                 "\n}";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Vote vote)) return false;
+        return id == vote.id
+                && userId == vote.userId
+                && voteOptionId == vote.voteOptionId
+                && Objects.equals(publishedAt, vote.publishedAt);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, userId, voteOptionId, publishedAt);
     }
 }

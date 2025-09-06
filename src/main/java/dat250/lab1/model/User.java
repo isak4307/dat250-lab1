@@ -1,9 +1,10 @@
 package dat250.lab1.model;
 
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class User {
+public class User implements Serializable {
     private String username;
     private String email;
     private int id = 0;
@@ -40,9 +41,9 @@ public class User {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User user)) return false;
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof User user)) return false;
         return Objects.equals(username, user.username) && Objects.equals(email, user.email);
     }
 

@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 
 @Component
 public class PollManager implements Serializable {
@@ -139,6 +141,16 @@ public class PollManager implements Serializable {
             }
         }
         return false;
+    }
+
+    public ArrayList<Vote> getAllVotes() {
+        ArrayList<Vote> voteList = new ArrayList<>();
+        for (HashSet<Vote> voteSet : this.voteManager.values()) {
+            for (Vote vo : voteSet) {
+                voteList.add(vo);
+            }
+        }
+        return voteList;
     }
 
     public ArrayList<Vote> getVotesByUser(int userId) {

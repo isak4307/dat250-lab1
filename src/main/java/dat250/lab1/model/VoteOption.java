@@ -2,7 +2,10 @@ package dat250.lab1.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-public class VoteOption {
+import java.io.Serializable;
+import java.util.Objects;
+
+public class VoteOption implements Serializable {
     private int id = 0;
     private String caption;
     private int presentationOrder;
@@ -53,5 +56,20 @@ public class VoteOption {
                 "\n caption:" + this.caption +
                 "\n presentationOrder:" + this.presentationOrder +
                 "\n}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof VoteOption voteOption)) return false;
+        return id == voteOption.id
+                && presentationOrder == voteOption.presentationOrder
+                && Objects.equals(caption, voteOption.caption)
+                && Objects.equals(poll, voteOption.poll);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, caption, presentationOrder, poll);
     }
 }
