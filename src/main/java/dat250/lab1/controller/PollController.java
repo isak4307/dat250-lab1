@@ -24,13 +24,13 @@ public class PollController {
     }
 
     @GetMapping("/polls/{pollId}/result")
-    public ResponseEntity<String> getResultOfPoll(@PathVariable int pollId) {
+    public ResponseEntity<HashMap<VoteOption, Integer>> getResultOfPoll(@PathVariable int pollId) {
         Poll poll = this.pollManager.getPollById(pollId);
         if (poll == null) {
-            return ResponseEntity.badRequest().body("Error: There is no poll with id " + pollId);
+            return ResponseEntity.badRequest().build();
         }
         HashMap<VoteOption, Integer> result = pollManager.voteCounter(pollId);
-        return ResponseEntity.ok("The following poll " + poll + "\n with the results " + result.toString());
+        return ResponseEntity.ok(result);
     }
 
     private boolean samePollQandC(Poll poll, int cId) {
@@ -45,66 +45,51 @@ public class PollController {
     }
 
     @PostMapping("/polls/{creatorId}")
-    public ResponseEntity<String> createPoll(@PathVariable int creatorId, @RequestBody Poll poll) {
-
-        if (samePollQandC(poll, creatorId)) {
-            return ResponseEntity.badRequest().body("Error: The poll already exists");
-        }
+    public ResponseEntity<Poll> createPoll(@PathVariable int creatorId, @RequestBody Poll poll) {
         List<VoteOption> voteOptions = poll.getVoteOptions();
-        if (voteOptions.size() < 2) {
-            return ResponseEntity.badRequest().body("Error: Need to have at least 2 voteoptions");
+        if (samePollQandC(poll, creatorId) || voteOptions.size() < 2) {
+            return ResponseEntity.badRequest().build();
         }
 
         // get user id for the creator and add it together later on
         User creator = this.pollManager.getUserById(creatorId);
         if (creator == null) {
-            return ResponseEntity.badRequest().body("Error: user with the id " + creatorId + " doesn't exist");
+            return ResponseEntity.badRequest().build();
         }
         //create voteOptions
         this.pollManager.createVoteOptions(poll);
-        pollManager.createPoll(poll, creator);
-        return ResponseEntity.ok("Created poll: " + poll.getQuestion());
+        return ResponseEntity.ok(pollManager.createPoll(poll, creator));
 
     }
 
     @PostMapping("/polls/{pollId}/votes")
-    public ResponseEntity<String> createVote(@PathVariable int pollId, @RequestBody Vote vote) {
+    public ResponseEntity<Vote> createVote(@PathVariable int pollId, @RequestBody Vote vote) {
         //Check that the voteOption and user id exists.
-        if (this.pollManager.getPollById(pollId) == null) {
-            return ResponseEntity.badRequest().body("Error: poll with the id " + pollId + " doesn't exist");
+        if (this.pollManager.getPollById(pollId) == null
+                || this.pollManager.getUserById(vote.getUserId()) == null
+                || this.pollManager.getVoteOptionById(pollId, vote.getVoteOptionId()) == null
+                || this.pollManager.userAlreadyVoted(pollId, vote.getUserId())) {
+            return ResponseEntity.badRequest().build();
         }
-        if (this.pollManager.getUserById(vote.getUserId()) == null) {
-            return ResponseEntity.badRequest().body("Error: user with the id " + vote.getVoteId() + " can't be found");
-        }
-        if (this.pollManager.getVoteOptionById(pollId, vote.getVoteOptionId()) == null) {
-            return ResponseEntity.badRequest().body("Error: voteOption with the id " + vote.getVoteOptionId() + " can't be found");
-        }
-
-        if (this.pollManager.userAlreadyVoted(pollId, vote.getUserId())) {
-            return ResponseEntity.badRequest().body("Error: user with the id " + vote.getUserId() + " has already voted on this poll with id " + pollId);
-        }
-        if (this.pollManager.createVote(pollId, vote)) {
-            return ResponseEntity.ok("Successfully voted for poll: " + pollId);
+        Vote createdVote = this.pollManager.createVote(pollId, vote);
+        if (createdVote != null) {
+            return ResponseEntity.ok(createdVote);
         } else {
-
             //This would mean the creatorid for the poll and userId voting is the same
-            return ResponseEntity.badRequest().body("Error: userId " + vote.getUserId() + " can't vote for its own poll");
+            return ResponseEntity.badRequest().build();
         }
 
     }
 
 
     @PutMapping("polls/{pollId}/changes/{userId}/newVoteOptions/{voteOption}")
-    public ResponseEntity<String> changeVote(@PathVariable int pollId, @PathVariable int userId, @PathVariable int voteOption) {
+    public ResponseEntity<Vote> changeVote(@PathVariable int pollId, @PathVariable int userId, @PathVariable int voteOption) {
         if (this.pollManager.getUserById(userId) != null && this.pollManager.getPollById(pollId) != null) {
-            if (this.pollManager.changeVote(pollId, userId, voteOption)) {
-                return ResponseEntity.ok("Successfully changed vote for userId " + userId +
-                        " to have voteOptionId " + voteOption + " at the poll " + pollId);
-            } else {
-                return ResponseEntity.badRequest().body("Error: Unable to change vote to have voteOptionId " + voteOption);
+            Vote changedVote = this.pollManager.changeVote(pollId, userId, voteOption);
+            if (changedVote != null) {
+                return ResponseEntity.ok(changedVote);
             }
-        } else {
-            return ResponseEntity.badRequest().body("Error: userId " + userId + " doesn't exist or pollId " + pollId + " doesn't exist");
         }
+        return ResponseEntity.badRequest().build();
     }
 }

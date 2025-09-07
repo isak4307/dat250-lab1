@@ -21,30 +21,20 @@ public class UserActions {
         return users.values();
     }
 
-    /**
-     * Creates user if the user doesn't exist.
-     * This means, the username or email isn't the same as some other user
-     *
-     * @param user
-     * @return true if it was able to register the user. False if it was unable
-     */
-    public boolean createUser(User user) {
+
+    public User createUser(User user) {
         for (User u : users.values()) {
             if (Objects.equals(u.getEmail(), user.getEmail()) || Objects.equals(u.getUsername(), user.getUsername())) {
-                return false;
+                return null;
             }
         }
         if (user.getUserId() == 0) {
             user.setUserId(userIdCounter.incrementAndGet());
             users.put(user.getUserId(), user);
         }
-        return true;
+        return user;
     }
 
-    /**
-     * @param id
-     * @return
-     */
     public User getUserById(int id) {
         return users.get(id);
     }

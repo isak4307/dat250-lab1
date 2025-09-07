@@ -1,6 +1,7 @@
 package dat250.lab1.controller;
 
 
+import dat250.lab1.model.Poll;
 import dat250.lab1.model.PollManager;
 import dat250.lab1.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,27 +24,28 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public ResponseEntity<String> createUser(@RequestBody User user) {
-        if (this.pollManager.createUser(user)) {
-            return ResponseEntity.ok("Created user:" + user.getUsername());
-
-        } else {
-            return ResponseEntity.badRequest().body("Error: Username " + user.getUsername() + " or email " + user.getEmail() + " already exists");
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        User newUser = this.pollManager.createUser(user);
+        if (newUser != null) {
+            return ResponseEntity.ok(newUser);
         }
+        return ResponseEntity.badRequest().build();
     }
 
     @DeleteMapping("users/{creatorId}/polls/{pollId}")
-    public ResponseEntity<String> deletePollById(@PathVariable int creatorId, @PathVariable int pollId) {
+    public ResponseEntity<Poll> deletePollById(@PathVariable int creatorId, @PathVariable int pollId) {
         if (this.pollManager.getPollById(pollId) == null) {
-            return ResponseEntity.badRequest().body("Error: poll with id " + pollId + " doesn't exist");
+            return ResponseEntity.badRequest().build();
         }
         if (this.pollManager.getPollById(pollId).getCreator().getUserId() != creatorId) {
-            return ResponseEntity.badRequest().body("Error: Poll can't be deleted if you aren't the creator");
+            return ResponseEntity.badRequest().build();
         }
-        if (this.pollManager.deletePollById(pollId)) {
-            return ResponseEntity.ok("Deleted poll with id:" + pollId);
+        Poll deletedPoll = this.pollManager.deletePollById(pollId);
+
+        if (deletedPoll != null) {
+            return ResponseEntity.ok(deletedPoll);
         } else {
-            return ResponseEntity.badRequest().body("Error: Unable to delete poll with id " + pollId);
+            return ResponseEntity.badRequest().build();
         }
     }
 }

@@ -44,16 +44,17 @@ public class PollManager implements Serializable {
         return this.pollManager.get(id);
     }
 
-    public Boolean createUser(User user) {
+    public User createUser(User user) {
         return this.userActions.createUser(user);
     }
 
 
-    public void createPoll(Poll poll, User user) {
+    public Poll createPoll(Poll poll, User user) {
         //Create the Poll objects and its fields
         this.pollActions.setPollId(poll, user);
         this.pollManager.put(poll.getPollId(), poll);
         this.voteManager.put(poll.getPollId(), new HashSet<>());
+        return poll;
     }
 
 
@@ -88,38 +89,38 @@ public class PollManager implements Serializable {
         return null;
     }
 
-    public boolean createVote(int pollId, Vote vote) {
+    public Vote createVote(int pollId, Vote vote) {
         this.voteActions.setVoteId(vote);
         if (vote.getUserId() == getPollById(pollId).getCreator().getUserId()) {
-            return false;
+            return null;
         }
         //If the poll exists
         if (this.pollManager.containsKey(pollId)) {
             HashSet<Vote> voteSet = this.voteManager.get(pollId);
             voteSet.add(vote);
-            return true;
+            return vote;
         }
-        return false;
+        return null;
     }
 
     public HashSet<Vote> getVotesByPollId(int pollId) {
         return this.voteManager.get(pollId);
     }
 
-    public boolean changeVote(int pollId, int userId, int newVoteOptionId) {
+    public Vote changeVote(int pollId, int userId, int newVoteOptionId) {
 
         HashSet<Vote> votes = getVotesByPollId(pollId);
         for (Vote v : votes) {
             if (v.getUserId() == userId) {
                 if (voteOptionExists(pollId, newVoteOptionId)) {
                     v.setVoteOptionId(newVoteOptionId);
-                    return true;
+                    return v;
                 } else {
-                    return false;
+                    return null;
                 }
             }
         }
-        return false;
+        return null;
     }
 
     private boolean voteOptionExists(int pollId, int newVoteOptionId) {
@@ -173,12 +174,13 @@ public class PollManager implements Serializable {
         }
     }
 
-    public boolean deletePollById(int pollId) {
+    public Poll deletePollById(int pollId) {
         //delete all votes from voteManager
         this.voteManager.remove(pollId);
         // delete the poll itself
+        Poll deletedPoll = this.pollManager.get(pollId);
         this.pollManager.remove(pollId);
-        return (this.pollManager.get(pollId) == null && this.voteManager.get(pollId) == null);
+        return deletedPoll;
     }
 
     public HashMap<VoteOption, Integer> voteCounter(int pollId) {

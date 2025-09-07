@@ -20,29 +20,29 @@ public class VoteController {
     }
 
     @GetMapping("votes/polls/{pollId}")
-    public ResponseEntity<String> getVotesByPoll(@PathVariable int pollId) {
+    public ResponseEntity<HashSet<Vote>> getVotesByPoll(@PathVariable int pollId) {
         if (this.pollManager.getPollById(pollId) == null) {
-            return ResponseEntity.badRequest().body("Error: There doesn't exist a poll with id " + pollId + " doesn't exist");
+            return ResponseEntity.badRequest().build();
         }
         HashSet<Vote> votes = this.pollManager.getVotesByPollId(pollId);
-        if (votes == null) {
-            return ResponseEntity.badRequest().body("Error: The polls doesn't have any votes");
+        if (votes != null) {
+            return ResponseEntity.ok(votes);
         } else {
-            return ResponseEntity.ok("Votes for pollId " + pollId + "\n" + votes.toString());
+            return ResponseEntity.badRequest().build();
         }
     }
 
     @GetMapping("votes/recent/{userId}")
-    public ResponseEntity<String> getUserVotes(@PathVariable int userId) {
+    public ResponseEntity<Vote> getUserVotes(@PathVariable int userId) {
         if (this.pollManager.getUserById(userId) == null) {
-            return ResponseEntity.badRequest().body("Error: user with id " + userId + " doesn't exist");
+            return ResponseEntity.badRequest().build();
         }
         ArrayList<Vote> votes = this.pollManager.getVotesByUser(userId);
         Vote recentVote = this.pollManager.getRecentVote(votes);
         if (recentVote != null) {
-            return ResponseEntity.ok("Recent vote for user " + userId + ": " + recentVote.toString());
+            return ResponseEntity.ok(recentVote);
         } else {
-            return ResponseEntity.badRequest().body("Error: user with id " + userId + " doesn't have a vote");
+            return ResponseEntity.badRequest().build();
         }
     }
 

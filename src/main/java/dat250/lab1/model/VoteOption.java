@@ -52,10 +52,8 @@ public class VoteOption implements Serializable {
     @Override
     public String toString() {
         return "{" +
-                "\n id:" + this.id +
-                "\n caption:" + this.caption +
-                "\n presentationOrder:" + this.presentationOrder +
-                "\n}";
+                "id:" + this.id +
+                "; caption:" + this.caption + "}";
     }
 
     @Override
