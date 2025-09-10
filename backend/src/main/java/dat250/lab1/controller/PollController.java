@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-
+@CrossOrigin
 @RestController
 public class PollController {
     private PollManager pollManager;
