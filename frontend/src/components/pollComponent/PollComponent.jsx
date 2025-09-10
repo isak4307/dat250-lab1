@@ -18,6 +18,7 @@ const PollComponent = (url) => {
     <div id="createPolls">
       <h4>Create a Poll </h4>
       <form onSubmit={handlePollSubmit}>
+        <input id="creator" type="text"/>
         <label id="LPoll" htmlFor="question">Question</label>
         <input id="question" type="text" />
         <label id="LValidUntil" htmlFor="validUntil">Valid Until (date)</label>

@@ -15,8 +15,10 @@ function UserComponent({ url }) {
         body: JSON.stringify(userObj)
       });
       const response = await res.json()
+      const jsonResp = JSON.stringify(response)
+      const user = JSON.parse(jsonResp)
       if (res.ok) {
-        setMessage(`OK: Created user ${response}`)
+        setMessage(`OK: Created user ` + user.username)
       }
       else{
         setMessage(`Error:Something went wrong,\n Try again`)

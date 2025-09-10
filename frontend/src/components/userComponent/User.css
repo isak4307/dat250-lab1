@@ -14,7 +14,7 @@
     background-color: darkgrey;
 }
 
-form {
+#createUser > form {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: repeat(3, 1fr);
@@ -25,7 +25,6 @@ form {
     border-style: solid;
     border-width: 0.5px;
 }
-
 
 #submitBtn {
     background-color:darkgray;
