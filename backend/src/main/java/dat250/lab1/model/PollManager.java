@@ -6,13 +6,14 @@ import dat250.lab1.actions.VoteActions;
 import dat250.lab1.actions.VoteOptionActions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-
+@CrossOrigin
 @Component
 public class PollManager implements Serializable {
 

@@ -1,24 +1,27 @@
-#createUsers{
+#createUsers {
     padding: 10px;
     border: 5px;
     border-color: black;
-    border-style:ridge;
+    border-style: ridge;
     border-radius: 15%;
     width: 350px;
-    margin: 0 auto; 
+    margin: 0 auto;
+    background-color: lightblue;
 }
+
 #createUserHeader {
-    margin-top:2px;
+    margin-top: 2px;
     font-size: larger;
     color: black;
     background-color: darkgrey;
 }
 
-#createUser > form {
+#createUserForm {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: repeat(3, 1fr);
 }
+
 #createUser>* {
     background-color: lightgray;
     border-color: black;
@@ -26,13 +29,17 @@
     border-width: 0.5px;
 }
 
-#submitBtn {
-    background-color:darkgray;
-    border-radius: 10%;
-    grid-column: span 2;
+#createUserBtn {
+    grid-column: 1;
     grid-row: 3;
 }
-#submitBtn:hover {
+
+.submitBtn {
+    background-color: darkgray;
+    border-radius: 10%;
+}
+
+.submitBtn:hover {
     transform: scale(1.1);
     transition: transform 0.1s;
 }

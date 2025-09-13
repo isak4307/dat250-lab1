@@ -1,0 +1,42 @@
+.polls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10%;
+    border: 5px;
+    border-color: black;
+    border-style: solid;
+    background-color: #d9dae3;
+}
+
+.pollObj {
+    display: block;
+    border-color: black;
+    border-style: double;
+    padding: 10px;
+    background-color: #edcaa2;
+}
+
+#showPollsHeader {
+    margin-top: 2px;
+    font-size: larger;
+    color: black;
+    background-color: darkgrey;
+}
+
+.voteCounter {
+    display: block;
+    margin: 5px;
+    background-color: #5aad6d;
+}
+
+.voteBtn:hover {
+    transform: scale(1.2);
+    transition: transform 0.2s;
+}
+
+ul>li {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
+}

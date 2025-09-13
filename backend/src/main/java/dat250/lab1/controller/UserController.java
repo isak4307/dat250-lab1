@@ -31,7 +31,18 @@ public class UserController {
         }
         return ResponseEntity.badRequest().build();
     }
-
+    @PostMapping("/users/signInn")
+    public ResponseEntity<User> signInn(@RequestBody User user){
+        HashSet<User> users = this.pollManager.getUsers();
+        if(users.contains(user)){
+            for(User u : users){
+                if(u.equals(user)){
+                    return ResponseEntity.ok(u);
+                }
+            }
+        }
+        return ResponseEntity.badRequest().build();
+    }
     @DeleteMapping("users/{creatorId}/polls/{pollId}")
     public ResponseEntity<Poll> deletePollById(@PathVariable int creatorId, @PathVariable int pollId) {
         if (this.pollManager.getPollById(pollId) == null) {
