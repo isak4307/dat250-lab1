@@ -12,8 +12,8 @@ public class Lab1Application {
 	public static void main(String[] args) {
 		SpringApplication.run(Lab1Application.class, args);
 	}
-	@GetMapping("/")
+	/*@GetMapping("/")
 	public String mainPage(){
 		return "HELLO World! <br> This is my submission for lab1";
-	}
+	}*/
 }

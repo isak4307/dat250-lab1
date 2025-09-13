@@ -1,4 +1,3 @@
-
 import "./Show.css"
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
@@ -23,7 +22,7 @@ function ShowComponent({ url, sessionId }) {
             }
         }
         catch (error) {
-            alert("Error: Something went wrong getting all the polls");
+            console.log("Error: Something went wrong getting all the polls");
         }
     };
     // create a vote object

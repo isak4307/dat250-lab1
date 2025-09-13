@@ -12,8 +12,11 @@
     flex-direction: column;
 
 } 
-
-
+#createPolls > * {
+    margin: 0 auto; 
+    width: 90%;
+    box-sizing: border-box;
+}
 #createPollHeader {
     margin-top: 2px;
     font-size: larger;
@@ -26,7 +29,6 @@ ul {
     margin: 0;
     padding: 0;
 }
-
 li {
     display: flex;
     flex-direction: column;

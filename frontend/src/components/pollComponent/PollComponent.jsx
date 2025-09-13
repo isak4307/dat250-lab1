@@ -48,7 +48,6 @@ function PollComponent({ url, sessionId }) {
     }
   };
   return (
-
     <div id="createPolls">
       <h4 id="createPollHeader">Create a Poll </h4>
       <label id="LPoll" htmlFor="question">Question</label>
