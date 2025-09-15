@@ -13,7 +13,7 @@ public class VoteActions {
     }
 
     public void setVoteId(Vote vote) {
-        if (vote.getId() == 0) {
+        if (vote.getId() ==null) {
             vote.setId(this.voteCounter.incrementAndGet());
         }
     }

@@ -1,5 +1,9 @@
 package dat250.lab1.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -7,13 +11,16 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
+@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 public class Vote implements Serializable {
-    private int id = 0;
-    private int userId;
-    private int voteOptionId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    private Integer userId;
+    private Integer voteOptionId;
     private Instant publishedAt;
 
     public Vote(int userId, int voteOptionId, Instant publishedAt) {

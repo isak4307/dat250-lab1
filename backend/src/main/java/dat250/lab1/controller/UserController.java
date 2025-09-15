@@ -44,7 +44,7 @@ public class UserController {
         return ResponseEntity.badRequest().build();
     }
     @DeleteMapping("users/{creatorId}/polls/{pollId}")
-    public ResponseEntity<Poll> deletePollById(@PathVariable int creatorId, @PathVariable int pollId) {
+    public ResponseEntity<Poll> deletePollById(@PathVariable Integer creatorId, @PathVariable Integer pollId) {
         if (this.pollManager.getPollById(pollId) == null) {
             return ResponseEntity.badRequest().build();
         }

@@ -2,6 +2,10 @@ package dat250.lab1.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,11 +15,14 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
+@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 public class Poll implements Serializable {
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
     private String question;
     private Instant publishedAt;
     private Instant validUntil;
@@ -51,7 +58,11 @@ public class Poll implements Serializable {
                 ",\n voteOptions:" + voteOptions +
                 '}';
     }
-
+    public VoteOption addVoteOption(String caption) {
+       VoteOption vo = new VoteOption(caption,this.voteOptions.size());
+       this.voteOptions.add(vo);
+       return vo;
+    }
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

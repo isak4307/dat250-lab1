@@ -24,7 +24,7 @@ public class PollController {
     }
 
     @GetMapping("/polls/{pollId}/result")
-    public ResponseEntity<HashMap<VoteOption, Integer>> getResultOfPoll(@PathVariable int pollId) {
+    public ResponseEntity<HashMap<VoteOption, Integer>> getResultOfPoll(@PathVariable Integer pollId) {
         Poll poll = this.pollManager.getPollById(pollId);
         if (poll == null) {
             return ResponseEntity.badRequest().build();
@@ -33,7 +33,7 @@ public class PollController {
         return ResponseEntity.ok(result);
     }
 
-    private boolean samePollQandC(Poll poll, int cId) {
+    private boolean samePollQandC(Poll poll, Integer cId) {
         HashSet<Poll> polls = this.pollManager.getPolls();
         User usr = this.pollManager.getUserById(cId);
         for (Poll p : polls) {
@@ -45,7 +45,7 @@ public class PollController {
     }
 
     @PostMapping("/polls/{creatorId}")
-    public ResponseEntity<Poll> createPoll(@PathVariable int creatorId, @RequestBody Poll poll) {
+    public ResponseEntity<Poll> createPoll(@PathVariable Integer creatorId, @RequestBody Poll poll) {
         List<VoteOption> voteOptions = poll.getVoteOptions();
         if (samePollQandC(poll, creatorId) || voteOptions.size() < 2) {
             return ResponseEntity.badRequest().build();

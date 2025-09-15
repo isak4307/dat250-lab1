@@ -41,7 +41,7 @@ public class PollManager implements Serializable {
         return new HashSet<>(this.pollManager.values());
     }
 
-    public Poll getPollById(int id) {
+    public Poll getPollById(Integer id) {
         return this.pollManager.get(id);
     }
 
@@ -59,7 +59,7 @@ public class PollManager implements Serializable {
     }
 
 
-    public User getUserById(int userId) {
+    public User getUserById(Integer userId) {
         return this.userActions.getUserById(userId);
     }
 
@@ -80,7 +80,7 @@ public class PollManager implements Serializable {
         poll.sortVoteOptions();
     }
 
-    public VoteOption getVoteOptionById(int pollId, int voteOptionId) {
+    public VoteOption getVoteOptionById(Integer pollId, Integer voteOptionId) {
         ArrayList<VoteOption> voL = this.pollManager.get(pollId).getVoteOptions();
         for (VoteOption vo : voL) {
             if (vo.getId() == voteOptionId) {
@@ -90,7 +90,7 @@ public class PollManager implements Serializable {
         return null;
     }
 
-    public Vote createVote(int pollId, Vote vote) {
+    public Vote createVote(Integer pollId, Vote vote) {
         this.voteActions.setVoteId(vote);
         if (vote.getUserId() == getPollById(pollId).getCreator().getId()) {
             return null;
@@ -104,11 +104,11 @@ public class PollManager implements Serializable {
         return null;
     }
 
-    public HashSet<Vote> getVotesByPollId(int pollId) {
+    public HashSet<Vote> getVotesByPollId(Integer pollId) {
         return this.voteManager.get(pollId);
     }
 
-    public Vote changeVote(int pollId, int userId, int newVoteOptionId) {
+    public Vote changeVote(Integer pollId, Integer userId, Integer newVoteOptionId) {
 
         HashSet<Vote> votes = getVotesByPollId(pollId);
         for (Vote v : votes) {
@@ -124,7 +124,7 @@ public class PollManager implements Serializable {
         return null;
     }
 
-    private boolean voteOptionExists(int pollId, int newVoteOptionId) {
+    private boolean voteOptionExists(Integer pollId, Integer newVoteOptionId) {
         Poll poll = getPollById(pollId);
         for (VoteOption vo : poll.getVoteOptions()) {
             if (vo.getId() == newVoteOptionId) {
@@ -135,7 +135,7 @@ public class PollManager implements Serializable {
     }
 
 
-    public boolean userAlreadyVoted(int pollId, int userId) {
+    public boolean userAlreadyVoted(Integer pollId, Integer userId) {
         HashSet<Vote> votes = getVotesByPollId(pollId);
         for (Vote v : votes) {
             if (v.getUserId() == userId) {
@@ -155,7 +155,7 @@ public class PollManager implements Serializable {
         return voteList;
     }
 
-    public ArrayList<Vote> getVotesByUser(int userId) {
+    public ArrayList<Vote> getVotesByUser(Integer userId) {
         ArrayList<Vote> userVotes = new ArrayList<>();
         for (HashSet<Vote> voteSet : this.voteManager.values()) {
             for (Vote vo : voteSet) {
@@ -168,14 +168,14 @@ public class PollManager implements Serializable {
     }
 
     public Vote getRecentVote(ArrayList<Vote> votes) {
-        if (votes.size() < 1) {
+        if (votes.isEmpty()) {
             return null;
         } else {
             return votes.stream().max(Comparator.comparing(Vote::getPublishedAt)).orElse(null);
         }
     }
 
-    public Poll deletePollById(int pollId) {
+    public Poll deletePollById(Integer pollId) {
         //delete all votes from voteManager
         this.voteManager.remove(pollId);
         // delete the poll itself
@@ -184,14 +184,14 @@ public class PollManager implements Serializable {
         return deletedPoll;
     }
 
-    public HashMap<VoteOption, Integer> voteCounter(int pollId) {
+    public HashMap<VoteOption, Integer> voteCounter(Integer pollId) {
         HashMap<VoteOption, Integer> counter = new HashMap<VoteOption, Integer>();
         HashSet<Vote> votes = voteManager.get(pollId);
         if (votes == null) {
             return counter;
         }
         for (Vote v : votes) {
-            int optionId = v.getVoteOptionId();
+            Integer optionId = v.getVoteOptionId();
             VoteOption vo = getVoteOptionById(pollId, optionId);
             if (counter.containsKey(vo)) {
                 counter.put(vo, counter.get(vo) + 1);

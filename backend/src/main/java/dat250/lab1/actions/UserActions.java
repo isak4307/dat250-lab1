@@ -28,14 +28,14 @@ public class UserActions {
                 return null;
             }
         }
-        if (user.getId() == 0) {
+        if (user.getId() == null) {
             user.setId(userIdCounter.incrementAndGet());
             users.put(user.getId(), user);
         }
         return user;
     }
 
-    public User getUserById(int id) {
+    public User getUserById(Integer id) {
         return users.get(id);
     }
 

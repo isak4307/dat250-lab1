@@ -1,17 +1,24 @@
 package dat250.lab1.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Objects;
+@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 public class VoteOption implements Serializable {
-    private int id = 0;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
     private String caption;
     private int presentationOrder;
     @JsonBackReference
@@ -21,8 +28,8 @@ public class VoteOption implements Serializable {
         this.caption = caption;
         this.presentationOrder = presentationOrder;
     }
-    public void setId(int id) {
-        if (this.id == 0) {
+    public void setId(Integer id) {
+        if (this.id == null) {
             this.id = id;
         }
     }

@@ -14,7 +14,7 @@ public class PollActions {
     }
 
     public void setPollId(Poll poll, User creator) {
-        if (poll.getId() == 0) {
+        if (poll.getId() == null) {
             poll.setId(this.pollIdCounter.incrementAndGet());
             poll.setCreator(creator);
         }

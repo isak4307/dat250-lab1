@@ -14,7 +14,7 @@ public class VoteOptionActions {
     }
 
     public void setVoteOptionId(VoteOption vo, Poll poll) {
-        if (vo.getId() == 0) {
+        if (vo.getId() == null) {
             vo.setId(this.voteOptionIdCounter.incrementAndGet());
             vo.setPoll(poll);
         }
