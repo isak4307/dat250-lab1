@@ -9,10 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
+
 @CrossOrigin
 @Component
 public class PollManager implements Serializable {
@@ -66,14 +64,14 @@ public class PollManager implements Serializable {
     public HashSet<ArrayList<VoteOption>> getAllVoteOptions() {
         HashSet<ArrayList<VoteOption>> voSet = new HashSet<>();
         for (Poll p : this.pollManager.values()) {
-            ArrayList<VoteOption> vopL = p.getVoteOptions();
+            ArrayList<VoteOption> vopL = new ArrayList<>(p.getOptions());
             voSet.add(vopL);
         }
         return voSet;
     }
 
     public void createVoteOptions(Poll poll) {
-        for (VoteOption vo : poll.getVoteOptions()) {
+        for (VoteOption vo : poll.getOptions()) {
             this.voteOptionActions.setVoteOptionId(vo, poll);
         }
         //sort the voteOption
@@ -81,9 +79,9 @@ public class PollManager implements Serializable {
     }
 
     public VoteOption getVoteOptionById(Integer pollId, Integer voteOptionId) {
-        ArrayList<VoteOption> voL = this.pollManager.get(pollId).getVoteOptions();
+        List<VoteOption> voL = this.pollManager.get(pollId).getOptions();
         for (VoteOption vo : voL) {
-            if (vo.getId() == voteOptionId) {
+            if (Objects.equals(vo.getId(), voteOptionId)) {
                 return vo;
             }
         }
@@ -92,7 +90,7 @@ public class PollManager implements Serializable {
 
     public Vote createVote(Integer pollId, Vote vote) {
         this.voteActions.setVoteId(vote);
-        if (vote.getUserId() == getPollById(pollId).getCreator().getId()) {
+        if (Objects.equals(vote.getUserId(), getPollById(pollId).getCreator().getId())) {
             return null;
         }
         //If the poll exists
@@ -112,7 +110,7 @@ public class PollManager implements Serializable {
 
         HashSet<Vote> votes = getVotesByPollId(pollId);
         for (Vote v : votes) {
-            if (v.getUserId() == userId) {
+            if (Objects.equals(v.getUserId(), userId)) {
                 if (voteOptionExists(pollId, newVoteOptionId)) {
                     v.setVoteOptionId(newVoteOptionId);
                     return v;
@@ -126,8 +124,8 @@ public class PollManager implements Serializable {
 
     private boolean voteOptionExists(Integer pollId, Integer newVoteOptionId) {
         Poll poll = getPollById(pollId);
-        for (VoteOption vo : poll.getVoteOptions()) {
-            if (vo.getId() == newVoteOptionId) {
+        for (VoteOption vo : poll.getOptions()) {
+            if (Objects.equals(vo.getId(), newVoteOptionId)) {
                 return true;
             }
         }
@@ -138,7 +136,7 @@ public class PollManager implements Serializable {
     public boolean userAlreadyVoted(Integer pollId, Integer userId) {
         HashSet<Vote> votes = getVotesByPollId(pollId);
         for (Vote v : votes) {
-            if (v.getUserId() == userId) {
+            if (Objects.equals(v.getUserId(), userId)) {
                 return true;
             }
         }
@@ -148,9 +146,7 @@ public class PollManager implements Serializable {
     public ArrayList<Vote> getAllVotes() {
         ArrayList<Vote> voteList = new ArrayList<>();
         for (HashSet<Vote> voteSet : this.voteManager.values()) {
-            for (Vote vo : voteSet) {
-                voteList.add(vo);
-            }
+            voteList.addAll(voteSet);
         }
         return voteList;
     }
@@ -159,7 +155,7 @@ public class PollManager implements Serializable {
         ArrayList<Vote> userVotes = new ArrayList<>();
         for (HashSet<Vote> voteSet : this.voteManager.values()) {
             for (Vote vo : voteSet) {
-                if (vo.getUserId() == userId) {
+                if (Objects.equals(vo.getUserId(), userId)) {
                     userVotes.add(vo);
                 }
             }

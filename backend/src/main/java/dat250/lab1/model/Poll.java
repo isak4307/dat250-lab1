@@ -2,10 +2,7 @@ package dat250.lab1.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,8 +11,10 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 @Entity
+@Table
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,16 +25,22 @@ public class Poll implements Serializable {
     private String question;
     private Instant publishedAt;
     private Instant validUntil;
+    // A poll can have many voteOptions, but a voteoption belong to only one poll
+    //OrphanRemoval removes a voteOption if the corresponding Poll object doesn't exist
+    @OneToMany(mappedBy = "poll", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private ArrayList<VoteOption> voteOptions;
+    private List<VoteOption> options;
+    // A user can have many Polls, but a poll can only belong to one creator
+    @ManyToOne
+    @JoinColumn(name="creator_id")
     @JsonBackReference
     private User creator;
 
-    public Poll(String question, Instant validUntil, Instant publishedAt, ArrayList<VoteOption> voteOptions) {
+    public Poll(String question, Instant validUntil, Instant publishedAt, ArrayList<VoteOption> options) {
         this.question = question;
         this.validUntil = validUntil;
         this.publishedAt = publishedAt;
-        this.voteOptions = voteOptions;
+        this.options = options;
     }
 
     public void setCreator(User creator) {
@@ -44,8 +49,11 @@ public class Poll implements Serializable {
         }
     }
 
+    /**
+     * Sorts the voteOptions on by the presentationOrder
+     */
     public void sortVoteOptions() {
-        this.voteOptions = new ArrayList<>(this.voteOptions.stream().sorted(Comparator.comparing(VoteOption::getPresentationOrder)).toList());
+        this.options = new ArrayList<>(this.options.stream().sorted(Comparator.comparing(VoteOption::getPresentationOrder)).toList());
     }
 
     @Override
@@ -55,12 +63,13 @@ public class Poll implements Serializable {
                 "\n question:" + question +
                 ",\n validUntil:" + validUntil +
                 ",\n publishedAt:" + publishedAt +
-                ",\n voteOptions:" + voteOptions +
+                ",\n options:" + options +
                 '}';
     }
     public VoteOption addVoteOption(String caption) {
-       VoteOption vo = new VoteOption(caption,this.voteOptions.size());
-       this.voteOptions.add(vo);
+       VoteOption vo = new VoteOption(caption,this.options.size());
+       vo.setPoll(this);
+       this.options.add(vo);
        return vo;
     }
     @Override

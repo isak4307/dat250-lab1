@@ -1,9 +1,6 @@
 package dat250.lab1.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,11 +19,19 @@ public class Vote implements Serializable {
     private Integer userId;
     private Integer voteOptionId;
     private Instant publishedAt;
-
+    // A VoteOption can have many Vote
+    @ManyToOne
+    @JoinColumn(name="voteOption_id")
+    private VoteOption votesOn;
     public Vote(int userId, int voteOptionId, Instant publishedAt) {
         this.userId = userId;
         this.publishedAt = publishedAt;
         this.voteOptionId = voteOptionId;
+    }
+    public Vote(int userId, VoteOption voteOption, Instant publishedAt) {
+        this.userId = userId;
+        this.publishedAt = publishedAt;
+        this.votesOn = voteOption;
     }
 
     @Override

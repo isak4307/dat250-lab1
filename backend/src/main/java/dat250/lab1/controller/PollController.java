@@ -46,7 +46,7 @@ public class PollController {
 
     @PostMapping("/polls/{creatorId}")
     public ResponseEntity<Poll> createPoll(@PathVariable Integer creatorId, @RequestBody Poll poll) {
-        List<VoteOption> voteOptions = poll.getVoteOptions();
+        List<VoteOption> voteOptions = poll.getOptions();
         if (samePollQandC(poll, creatorId) || voteOptions.size() < 2) {
             return ResponseEntity.badRequest().build();
         }
