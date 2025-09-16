@@ -2,27 +2,28 @@ import "./Poll.css"
 
 import { useState } from 'react';
 function PollComponent({ url, sessionId }) {
-  const [voteOptionSet, setVoteOptionSets] = useState([{ caption: '', presentationOrder: 0 }]);
+  const [optionSet, setOptionSets] = useState([{ caption: '', presentationOrder: 0 }]);
   const [question, setQuestion] = useState("");
   const [validUntil, setValidUntil] = useState(undefined);
   const [publishedAt, setPublishedAt] = useState(undefined);
   // Add new fields for a new caption and presentation order.
   const addNewVoteOption = () => {
     // Initalize an empty caption and a presentationOrder with value 0
-    setVoteOptionSets([...voteOptionSet, { caption: '', presentationOrder: 0 }]);
+    setOptionSets([...optionSet, { caption: '', presentationOrder: 0 }]);
   };
 
   const handleChange = (index, event) => {
     const caption = event.target.name;
     const presentationOrder = event.target.value;
-    const updatedVoteOption = [...voteOptionSet];
+    const updatedVoteOption = [...optionSet];
     updatedVoteOption[index][caption] = caption === 'presentationOrder' ? parseInt(presentationOrder) : presentationOrder;
-    setVoteOptionSets(updatedVoteOption);
+    setOptionSets(updatedVoteOption);
   };
+  
 
 
   const handlePollSubmit = async () => {
-    const voteOptionList = voteOptionSet.map(({ caption, presentationOrder }) => ({
+    const voteOptionList = optionSet.map(({ caption, presentationOrder }) => ({
       caption,
       presentationOrder
     }));
@@ -30,7 +31,7 @@ function PollComponent({ url, sessionId }) {
       question: question,
       validUntil: new Date(validUntil).toISOString(),
       publishedAt: new Date(publishedAt).toISOString(),
-      voteOptions: voteOptionList
+      options: voteOptionList
     };
     try {
       const res = await fetch(`${url}/polls/` + sessionId, {
@@ -59,7 +60,7 @@ function PollComponent({ url, sessionId }) {
       <label id="LValidUntil" htmlFor="validUntil">Valid Until</label>
       <input value={validUntil} type="datetime-local" onChange={e => setValidUntil(e.target.value)} required placeholder="Valid until" />
       <ul>
-        {voteOptionSet.map((voteOption, index) => (
+        {optionSet.map((option, index) => (
           <li key={index}>
             <label>
               Caption:
@@ -67,7 +68,7 @@ function PollComponent({ url, sessionId }) {
             <input
               type="text"
               name="caption"
-              value={voteOption.caption}
+              value={option.caption}
               onChange={(e) => handleChange(index, e)}
             />
             <label>
@@ -76,7 +77,7 @@ function PollComponent({ url, sessionId }) {
             <input
               type="number"
               name="presentationOrder"
-              value={voteOption.presentationOrder}
+              value={option.presentationOrder}
               onChange={(e) => handleChange(index, e)}
               min={1}
             />

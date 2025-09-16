@@ -5,7 +5,7 @@ import UserComponent from './components/userComponent/UserComponent'
 import PollComponent from './components/pollComponent/PollComponent'
 import ShowComponent from './components/showComponent/ShowComponent'
 function App() {
-  const URL = "";
+  const URL = "http://localhost:8080";
   const [sessionId, setSessionId] = useState("");
   return (
     <BrowserRouter>

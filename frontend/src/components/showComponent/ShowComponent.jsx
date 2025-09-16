@@ -115,7 +115,7 @@ function ShowComponent({ url, sessionId }) {
                         <p>Published: {poll.published_At}</p>
                         <p>Valid Until: {poll.validUntil}</p>
                         <ul>
-                            {poll.voteOptions.map((option, index) => (
+                            {poll.options.map((option, index) => (
                                 <li key={index}>
                                     <button className="voteBtn" onClick={() => AddVote(option.id, poll.id, sessionId, option.caption)}>{option.caption}</button>
                                     <span className="voteCounter">
