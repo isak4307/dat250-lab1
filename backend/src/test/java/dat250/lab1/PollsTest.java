@@ -42,9 +42,6 @@ public class PollsTest {
         em.persist(bob.voteFor(vim));
         em.persist(eve.voteFor(emacs));
         em.persist(eve.voteFor(yes));
-        System.out.println("HERRO");
-        System.out.println(poll2.getOptions());
-        System.out.flush();
     }
 
     @BeforeEach
