@@ -8,10 +8,12 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
+
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@Table
 public class Vote implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,14 +23,16 @@ public class Vote implements Serializable {
     private Instant publishedAt;
     // A VoteOption can have many Vote
     @ManyToOne
-    @JoinColumn(name="voteOption_id")
+    @JoinColumn(name = "voteOption_id")
     private VoteOption votesOn;
-    public Vote(int userId, int voteOptionId, Instant publishedAt) {
+
+    public Vote(Integer userId, Integer voteOptionId, Instant publishedAt) {
         this.userId = userId;
         this.publishedAt = publishedAt;
         this.voteOptionId = voteOptionId;
     }
-    public Vote(int userId, VoteOption voteOption, Instant publishedAt) {
+
+    public Vote(Integer userId, VoteOption voteOption, Instant publishedAt) {
         this.userId = userId;
         this.publishedAt = publishedAt;
         this.votesOn = voteOption;
@@ -46,9 +50,9 @@ public class Vote implements Serializable {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof Vote vote)) return false;
-        return id == vote.id
-                && userId == vote.userId
-                && voteOptionId == vote.voteOptionId
+        return Objects.equals(id, vote.id)
+                && Objects.equals(userId, vote.userId)
+                && Objects.equals(voteOptionId, vote.voteOptionId)
                 && Objects.equals(publishedAt, vote.publishedAt);
     }
 
