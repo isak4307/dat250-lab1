@@ -23,7 +23,7 @@ public class Vote implements Serializable {
     private Instant publishedAt;
     // A VoteOption can have many Vote
     @ManyToOne
-    @JoinColumn(name = "voteOption_id")
+    @JoinColumn(name = "votesOn")
     private VoteOption votesOn;
 
     public Vote(Integer userId, Integer voteOptionId, Instant publishedAt) {
