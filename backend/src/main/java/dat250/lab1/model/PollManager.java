@@ -7,6 +7,7 @@ import dat250.lab1.actions.VoteOptionActions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import redis.clients.jedis.UnifiedJedis;
 
 import java.io.Serializable;
 import java.util.*;
@@ -23,6 +24,7 @@ public class PollManager implements Serializable {
     private final HashMap<Integer, Poll> pollManager = new HashMap<>();
     // integer = poll ID
     private final HashMap<Integer, HashSet<Vote>> voteManager = new HashMap<>();
+    private final UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
 
     public PollManager(@Autowired UserActions userActions, @Autowired PollActions pollActions, @Autowired VoteOptionActions voteOptionActions, @Autowired VoteActions voteActions) {
         this.userActions = userActions;
@@ -89,14 +91,17 @@ public class PollManager implements Serializable {
     }
 
     public Vote createVote(Integer pollId, Vote vote) {
-        this.voteActions.setVoteId(vote);
+        //If the user who voted is the creator
         if (Objects.equals(vote.getUserId(), getPollById(pollId).getCreator().getId())) {
             return null;
         }
-        //If the poll exists
+        //If the poll exists, then create the vote
         if (this.pollManager.containsKey(pollId)) {
+            this.voteActions.setVoteId(vote);
             HashSet<Vote> voteSet = this.voteManager.get(pollId);
             voteSet.add(vote);
+            String key = "poll:" + pollId;
+            this.jedis.hincrBy(key, String.valueOf(vote.getVoteOptionId()), 1);
             return vote;
         }
         return null;
@@ -112,7 +117,16 @@ public class PollManager implements Serializable {
         for (Vote v : votes) {
             if (Objects.equals(v.getUserId(), userId)) {
                 if (voteOptionExists(pollId, newVoteOptionId)) {
+                    Integer oldVoteOptionId = v.getVoteOptionId();
                     v.setVoteOptionId(newVoteOptionId);
+                    String key = "poll:" + pollId;
+                    //Only update the cache if the result exist in the cache
+                    if (checkRedis(key)) {
+                        //Remove the vote from the voteOption
+                        this.jedis.hincrBy(key, String.valueOf(oldVoteOptionId), -1);
+                        //increase the vote counter for the new voteOption
+                        this.jedis.hincrBy(key, String.valueOf(newVoteOptionId), 1);
+                    }
                     return v;
                 } else {
                     return null;
@@ -180,22 +194,78 @@ public class PollManager implements Serializable {
         return deletedPoll;
     }
 
+    /**
+     * Check if the cache contains the poll object with its results
+     * @param key the key to indicate which poll it is about
+     * @return True if it exists in the cache
+     */
+    private Boolean checkRedis(String key) {
+        Map<String, String> jsonCounter = this.jedis.hgetAll(key);
+        return (jsonCounter != null && !jsonCounter.isEmpty());
+    }
+
+    //TODO figure out appropriate TTL
+    // Found out how to update cache when adding new vote, and changing vote.
+    //TODO Logic to invalidate a poll entry in the cache in the event of a vote
     public HashMap<VoteOption, Integer> voteCounter(Integer pollId) {
-        HashMap<VoteOption, Integer> counter = new HashMap<VoteOption, Integer>();
         HashSet<Vote> votes = voteManager.get(pollId);
+        //Check if there are no votes in the poll.
         if (votes == null) {
-            return counter;
+            return new HashMap<VoteOption, Integer>();
         }
-        for (Vote v : votes) {
-            Integer optionId = v.getVoteOptionId();
-            VoteOption vo = getVoteOptionById(pollId, optionId);
-            if (counter.containsKey(vo)) {
-                counter.put(vo, counter.get(vo) + 1);
-            } else {
-                counter.put(vo, 1);
+
+        String key = "poll:" + pollId;
+        //Check if the cache contains the votes for the poll
+        HashMap<Integer, Integer> counter = new HashMap<>();
+        if (checkRedis(key)) {
+            Map<String, String> jsonCounter = this.jedis.hgetAll(key);
+            for (Map.Entry<String, String> entry : jsonCounter.entrySet()) {
+                counter.put(Integer.parseInt(entry.getKey()), Integer.parseInt(entry.getValue()));
             }
+        } else {
+            //go through all the votes for the specific poll, and count them according to voteOption
+            Map<String, String> redisMap = new HashMap<>();
+            for (Vote v : votes) {
+                Integer optionId = v.getVoteOptionId();
+                if (counter.containsKey(optionId)) {
+                    counter.put(optionId, counter.get(optionId) + 1);
+
+                } else {
+                    counter.put(optionId, 1);
+                }
+                redisMap.put(String.valueOf(optionId), String.valueOf(counter.get(optionId)));
+            }
+            //Store it in the cache currently 2 min ttl
+            int ttlMin = 2;
+            int ttlSec = 60 * ttlMin;
+            jedis.hset(key, redisMap);
+            jedis.expire(key, ttlSec);
         }
-        return counter;
+        return mapToVoteOption(counter, pollId);
+    }
+
+    /**
+     * Maps voteOptionId to the voteOption object, and its amount of votes
+     *
+     * @param counter Map consisting of voteOptionId and its total votes
+     * @param pollId
+     * @return a Map which has VoteOption and its total votes
+     */
+    private HashMap<VoteOption, Integer> mapToVoteOption(HashMap<Integer, Integer> counter, Integer pollId) {
+        if (counter == null || counter.isEmpty()) {
+            return new HashMap<VoteOption, Integer>();
+        }
+        HashMap<VoteOption, Integer> result = new HashMap<>();
+        List<VoteOption> voteOptionList = this.pollManager.get(pollId).getOptions();
+        for (VoteOption vo : voteOptionList) {
+            Integer counts = counter.get(vo.getId());
+            //If the VoteOption doesn't have any votes, we can't have it be displayed null
+            if (counts == null) {
+                counts = 0;
+            }
+            result.put(vo, counts);
+        }
+        return result;
 
     }
 }

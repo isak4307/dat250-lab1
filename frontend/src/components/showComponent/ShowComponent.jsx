@@ -68,6 +68,9 @@ function ShowComponent({ url, sessionId }) {
                         const result = await res.json();
                         resultsMap[poll.id] = result;
                     }
+                    else{
+                        console.log("Error fetching result for the poll");
+                    }
                 } catch (error) {
                     alert(`Error fetching result for poll ${poll.id}:`, error);
                 }
