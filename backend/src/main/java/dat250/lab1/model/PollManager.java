@@ -100,8 +100,12 @@ public class PollManager implements Serializable {
             this.voteActions.setVoteId(vote);
             HashSet<Vote> voteSet = this.voteManager.get(pollId);
             voteSet.add(vote);
+            //update the vote counter in redis
             String key = "poll:" + pollId;
-            this.jedis.hincrBy(key, String.valueOf(vote.getVoteOptionId()), 1);
+            if (checkRedis(key)) {
+                this.jedis.hincrBy(key, String.valueOf(vote.getVoteOptionId()), 1);
+
+            }
             return vote;
         }
         return null;
@@ -191,11 +195,17 @@ public class PollManager implements Serializable {
         // delete the poll itself
         Poll deletedPoll = this.pollManager.get(pollId);
         this.pollManager.remove(pollId);
+        //delete the poll in redis if it does exist
+        String key = "poll:" + pollId;
+        if (checkRedis(key)) {
+            this.jedis.del(key);
+        }
         return deletedPoll;
     }
 
     /**
      * Check if the cache contains the poll object with its results
+     *
      * @param key the key to indicate which poll it is about
      * @return True if it exists in the cache
      */
@@ -204,9 +214,6 @@ public class PollManager implements Serializable {
         return (jsonCounter != null && !jsonCounter.isEmpty());
     }
 
-    //TODO figure out appropriate TTL
-    // Found out how to update cache when adding new vote, and changing vote.
-    //TODO Logic to invalidate a poll entry in the cache in the event of a vote
     public HashMap<VoteOption, Integer> voteCounter(Integer pollId) {
         HashSet<Vote> votes = voteManager.get(pollId);
         //Check if there are no votes in the poll.
