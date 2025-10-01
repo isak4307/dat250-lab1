@@ -25,18 +25,19 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.6.0")
-
+    //Lombok
     compileOnly("org.projectlombok:lombok:1.18.40")
     annotationProcessor("org.projectlombok:lombok:1.18.40")
     testCompileOnly("org.projectlombok:lombok:1.18.40")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.40")
-
+    //JPA
     implementation("org.hibernate.orm:hibernate-core:7.1.1.Final")
     implementation("com.h2database:h2:2.3.232")
     implementation("jakarta.persistence:jakarta.persistence-api:3.2.0")
-
+    //Redis
     implementation("redis.clients:jedis:6.2.0")
-
+    //RabbitMQ
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
 }
 
 tasks.withType<Test> {

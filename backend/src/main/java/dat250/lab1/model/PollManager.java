@@ -4,7 +4,11 @@ import dat250.lab1.actions.PollActions;
 import dat250.lab1.actions.UserActions;
 import dat250.lab1.actions.VoteActions;
 import dat250.lab1.actions.VoteOptionActions;
+import dat250.lab1.messager.Consumer;
+import dat250.lab1.messager.MessagerSetup;
+import dat250.lab1.messager.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import redis.clients.jedis.UnifiedJedis;
@@ -26,11 +30,17 @@ public class PollManager implements Serializable {
     private final HashMap<Integer, HashSet<Vote>> voteManager = new HashMap<>();
     private final UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
 
-    public PollManager(@Autowired UserActions userActions, @Autowired PollActions pollActions, @Autowired VoteOptionActions voteOptionActions, @Autowired VoteActions voteActions) {
+
+    public PollManager(@Autowired UserActions userActions,
+                       @Autowired PollActions pollActions,
+                       @Autowired VoteOptionActions voteOptionActions,
+                       @Autowired VoteActions voteActions) {
         this.userActions = userActions;
         this.pollActions = pollActions;
         this.voteOptionActions = voteOptionActions;
         this.voteActions = voteActions;
+        /*this.messagerSetup = messagerSetup;
+        this.consumer = consumer;*/
     }
 
     public HashSet<User> getUsers() {
@@ -55,9 +65,19 @@ public class PollManager implements Serializable {
         this.pollActions.setPollId(poll, user);
         this.pollManager.put(poll.getId(), poll);
         this.voteManager.put(poll.getId(), new HashSet<>());
+        //registerTopic(poll);
         return poll;
     }
 
+    /** Register a respective Topic to the poll
+     * TODO
+     */
+  /*  private void registerTopic(Poll poll){
+        String queueName ="poll-" + poll.getId() + "-queue";
+        this.messagerSetup.setupMessagerPoll(poll.getId());
+        consumer.receiveMessage(queueName);
+    }
+*/
 
     public User getUserById(Integer userId) {
         return this.userActions.getUserById(userId);
@@ -109,6 +129,7 @@ public class PollManager implements Serializable {
             return vote;
         }
         return null;
+        //TODO create vote messager
     }
 
     public HashSet<Vote> getVotesByPollId(Integer pollId) {
@@ -137,6 +158,7 @@ public class PollManager implements Serializable {
                 }
             }
         }
+        //TODO send message to
         return null;
     }
 
@@ -200,6 +222,7 @@ public class PollManager implements Serializable {
         if (checkRedis(key)) {
             this.jedis.del(key);
         }
+        //TODO delete queue
         return deletedPoll;
     }
 
@@ -255,7 +278,7 @@ public class PollManager implements Serializable {
      * Maps voteOptionId to the voteOption object, and its amount of votes
      *
      * @param counter Map consisting of voteOptionId and its total votes
-     * @param pollId
+     * @param pollId id of the poll
      * @return a Map which has VoteOption and its total votes
      */
     private HashMap<VoteOption, Integer> mapToVoteOption(HashMap<Integer, Integer> counter, Integer pollId) {

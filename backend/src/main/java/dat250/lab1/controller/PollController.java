@@ -1,7 +1,9 @@
 package dat250.lab1.controller;
 
+import dat250.lab1.messager.*;
 import dat250.lab1.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,9 +15,16 @@ import java.util.List;
 @RestController
 public class PollController {
     private PollManager pollManager;
-
-    public PollController(@Autowired PollManager pollManager) {
+    @Autowired
+    private Producer producer;
+    @Lazy
+    private final MessagerSetup messagerSetup;
+    @Lazy
+    private final Consumer consumer;
+    public PollController(@Autowired PollManager pollManager,@Autowired MessagerSetup messagerSetup, @Autowired Consumer consumer) {
         this.pollManager = pollManager;
+        this.messagerSetup = messagerSetup;
+        this.consumer = consumer;
     }
 
     @GetMapping("/polls")
@@ -58,8 +67,15 @@ public class PollController {
         }
         //create voteOptions
         this.pollManager.createVoteOptions(poll);
-        return ResponseEntity.ok(pollManager.createPoll(poll, creator));
+        Poll createdPoll = pollManager.createPoll(poll,creator);
+        registerTopic(createdPoll);
+        return ResponseEntity.ok(createdPoll);
 
+    }
+    private void registerTopic(Poll poll){
+        String queueName ="poll-" + poll.getId() + "-queue";
+        this.messagerSetup.setupMessagerPoll(poll.getId());
+        consumer.receiveMessage(queueName);
     }
 
     @PostMapping("/polls/{pollId}/votes")
@@ -71,7 +87,10 @@ public class PollController {
                 || this.pollManager.userAlreadyVoted(pollId, vote.getUserId())) {
             return ResponseEntity.badRequest().build();
         }
-        Vote createdVote = this.pollManager.createVote(pollId, vote);
+        VoteMessage msg = new VoteMessage(MessageAction.CREATEVOTE,pollId,vote);
+        //this.producer.sendMessage(pollId,msg);
+        //TODO how would this work?
+        Vote createdVote = this.pollManager.createVote(pollId,vote);
         if (createdVote != null) {
             return ResponseEntity.ok(createdVote);
         } else {
