@@ -15,18 +15,26 @@ public class VoteMessage {
     private Integer voteOptionId;
     private Vote vote;
     private MessageAction action;
-    public VoteMessage(MessageAction action, Integer pollId,Integer userId, Integer voteOptionId) {
+
+    public VoteMessage(MessageAction action, Integer pollId, Integer userId, Integer voteOptionId) {
         this.action = action;
         this.pollId = pollId;
         this.userId = userId;
         this.voteOptionId = voteOptionId;
 
     }
+
     // Create Poll
-    public VoteMessage(MessageAction action, Integer pollId,Vote vote) {
+    public VoteMessage(MessageAction action, Integer pollId, Vote vote) {
         this.action = action;
         this.pollId = pollId;
         this.vote = vote;
+    }
+
+    // Delete Poll
+    public VoteMessage(MessageAction action, Integer pollId) {
+        this.action = action;
+        this.pollId = pollId;
     }
 
 }

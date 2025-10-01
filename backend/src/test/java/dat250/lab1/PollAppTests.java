@@ -4,6 +4,7 @@ import dat250.lab1.model.Poll;
 import dat250.lab1.model.User;
 import dat250.lab1.model.Vote;
 import dat250.lab1.model.VoteOption;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +19,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -111,28 +113,27 @@ public class PollAppTests {
         int pollId = 1;
         int userId = 2;
         Vote vote = new Vote(userId, voteOption, voteTime);
-        ResponseEntity<Vote> voteRes = client.post().uri("/polls/{pollId}/votes", pollId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(vote).retrieve().toEntity(Vote.class);
+        ResponseEntity<Void> voteRes = client.post().uri("/polls/{pollId}/votes", pollId)
+                .contentType(MediaType.APPLICATION_JSON).body(vote).retrieve().toBodilessEntity();
         assertNotNull(voteRes);
-        assertEquals(HttpStatus.OK, voteRes.getStatusCode());
-        assertEquals(vote.getVoteOptionId(), voteRes.getBody().getVoteOptionId());
-        assertEquals(userId, voteRes.getBody().getUserId());
-        assertEquals(voteTime, voteRes.getBody().getPublishedAt());
+        assertEquals(HttpStatus.ACCEPTED, voteRes.getStatusCode());
 
-
+        //Rabbit is asynchronous, ensure that we get the Vote objects before returning
         //check votecounter has gone up for the poll
-        ResponseEntity<HashSet<Vote>> getVoteCounterRes = client.get().uri("votes/polls/{pollId}", pollId)
-                .retrieve().toEntity(new ParameterizedTypeReference<HashSet<Vote>>() {
-                });
-        assertNotNull(getVoteCounterRes);
-        assertEquals(HttpStatus.OK, voteRes.getStatusCode());
-        assertEquals(1, getVoteCounterRes.getBody().size());
-        for (Vote v : getVoteCounterRes.getBody()) {
-            assertEquals(vote.getVoteOptionId(), v.getVoteOptionId());
-            assertEquals(userId, v.getUserId());
-            assertEquals(voteTime, v.getPublishedAt());
-        }
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            ResponseEntity<HashSet<Vote>> getVoteCounterRes = client.get().uri("votes/polls/{pollId}", pollId)
+                    .retrieve().toEntity(new ParameterizedTypeReference<HashSet<Vote>>() {
+                    });
+            assertNotNull(getVoteCounterRes);
+            assertEquals(HttpStatus.OK, getVoteCounterRes.getStatusCode());
+            assertEquals(1, getVoteCounterRes.getBody().size());
+            for (Vote v : getVoteCounterRes.getBody()) {
+                assertEquals(vote.getVoteOptionId(), v.getVoteOptionId());
+                assertEquals(userId, v.getUserId());
+                assertEquals(voteTime, v.getPublishedAt());
+            }
+        });
+
         //save the current vote for user 2 to compare it later.
         ResponseEntity<Vote> voteResBeforeChange = client.get().
                 uri("votes/recent/{userId}", userId)
@@ -142,15 +143,22 @@ public class PollAppTests {
 
         //user 2 changes vote to voteOption 4
         int newVoteOption = 4;
-        ResponseEntity<Vote> changeVoteRes = client.put()
-                .uri("polls/{pollId}/changes/{userId}/newVoteOptions/{voteOption}", pollId, userId, newVoteOption)
-                .contentType(MediaType.APPLICATION_JSON)
-                .retrieve().toEntity(Vote.class);
-        assertNotNull(changeVoteRes);
-        assertEquals(HttpStatus.OK, changeVoteRes.getStatusCode());
-        assertEquals(newVoteOption, changeVoteRes.getBody().getVoteOptionId());
-        assertNotEquals(vote, changeVoteRes.getBody());
-
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            ResponseEntity<Void> changeVoteRes = client.put()
+                    .uri("polls/{pollId}/changes/{userId}/newVoteOptions/{voteOption}", pollId, userId, newVoteOption)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .retrieve().toBodilessEntity();
+            assertNotNull(changeVoteRes);
+            assertEquals(HttpStatus.ACCEPTED, changeVoteRes.getStatusCode());
+            ArrayList<Vote> votes = client.get()
+                    .uri("/votes").retrieve().toEntity(new ParameterizedTypeReference<ArrayList<Vote>>() {
+                    }).getBody();
+            assertNotNull(votes);
+            assertEquals(1, votes.size());
+            Vote vote1 = votes.getFirst();
+            assertEquals(userId, vote1.getUserId());
+            assertEquals(newVoteOption, vote1.getVoteOptionId());
+        });
         //list recent votes for user 2
         ResponseEntity<Vote> recentVoteRes = client.get().
                 uri("votes/recent/{userId}", userId)
@@ -162,14 +170,12 @@ public class PollAppTests {
         assertEquals(voteTime, recentVoteRes.getBody().getPublishedAt());
 
         //Delete one poll
-        Poll deletePollRes = client.delete().
-                uri("users/{creatorId}/polls/{pollId}", 1, pollId).
-                retrieve().body(Poll.class);
-        assertEquals(poll.getQuestion(), deletePollRes.getQuestion());
-        assertEquals(poll.getCreator(), deletePollRes.getCreator());
-        assertEquals(publishedAt, deletePollRes.getPublishedAt());
-        assertEquals(validUntil, deletePollRes.getValidUntil());
-
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            ResponseEntity<Void> deleted = client.delete().uri("users/{creatorId}/polls/{pollId}", 1, pollId).
+                    retrieve().toBodilessEntity();
+            assertNotNull(deleted);
+            assertEquals(HttpStatus.ACCEPTED, deleted.getStatusCode());
+        });
         //check that the list of polls are empty
         HashSet<Poll> emptyListPolls = client.get().uri("/polls").retrieve().
                 toEntity(new ParameterizedTypeReference<HashSet<Poll>>() {

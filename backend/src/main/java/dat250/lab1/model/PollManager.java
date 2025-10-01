@@ -4,11 +4,7 @@ import dat250.lab1.actions.PollActions;
 import dat250.lab1.actions.UserActions;
 import dat250.lab1.actions.VoteActions;
 import dat250.lab1.actions.VoteOptionActions;
-import dat250.lab1.messager.Consumer;
-import dat250.lab1.messager.MessagerSetup;
-import dat250.lab1.messager.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import redis.clients.jedis.UnifiedJedis;
@@ -39,8 +35,6 @@ public class PollManager implements Serializable {
         this.pollActions = pollActions;
         this.voteOptionActions = voteOptionActions;
         this.voteActions = voteActions;
-        /*this.messagerSetup = messagerSetup;
-        this.consumer = consumer;*/
     }
 
     public HashSet<User> getUsers() {
@@ -65,19 +59,9 @@ public class PollManager implements Serializable {
         this.pollActions.setPollId(poll, user);
         this.pollManager.put(poll.getId(), poll);
         this.voteManager.put(poll.getId(), new HashSet<>());
-        //registerTopic(poll);
         return poll;
     }
 
-    /** Register a respective Topic to the poll
-     * TODO
-     */
-  /*  private void registerTopic(Poll poll){
-        String queueName ="poll-" + poll.getId() + "-queue";
-        this.messagerSetup.setupMessagerPoll(poll.getId());
-        consumer.receiveMessage(queueName);
-    }
-*/
 
     public User getUserById(Integer userId) {
         return this.userActions.getUserById(userId);
@@ -110,33 +94,31 @@ public class PollManager implements Serializable {
         return null;
     }
 
-    public Vote createVote(Integer pollId, Vote vote) {
+    public void createVote(Integer pollId, Vote vote) {
         //If the user who voted is the creator
-        if (Objects.equals(vote.getUserId(), getPollById(pollId).getCreator().getId())) {
-            return null;
-        }
-        //If the poll exists, then create the vote
-        if (this.pollManager.containsKey(pollId)) {
-            this.voteActions.setVoteId(vote);
-            HashSet<Vote> voteSet = this.voteManager.get(pollId);
-            voteSet.add(vote);
-            //update the vote counter in redis
-            String key = "poll:" + pollId;
-            if (checkRedis(key)) {
-                this.jedis.hincrBy(key, String.valueOf(vote.getVoteOptionId()), 1);
+        if (!Objects.equals(vote.getUserId(), getPollById(pollId).getCreator().getId())) {
 
+            //If the poll exists, then create the vote
+            if (this.pollManager.containsKey(pollId)) {
+                this.voteActions.setVoteId(vote);
+                HashSet<Vote> voteSet = this.voteManager.get(pollId);
+                voteSet.add(vote);
+                //update the vote counter in redis
+                String key = "poll:" + pollId;
+                if (checkRedis(key)) {
+                    this.jedis.hincrBy(key, String.valueOf(vote.getVoteOptionId()), 1);
+
+                }
             }
-            return vote;
         }
-        return null;
-        //TODO create vote messager
+
     }
 
     public HashSet<Vote> getVotesByPollId(Integer pollId) {
         return this.voteManager.get(pollId);
     }
 
-    public Vote changeVote(Integer pollId, Integer userId, Integer newVoteOptionId) {
+    public void changeVote(Integer pollId, Integer userId, Integer newVoteOptionId) {
 
         HashSet<Vote> votes = getVotesByPollId(pollId);
         for (Vote v : votes) {
@@ -152,14 +134,10 @@ public class PollManager implements Serializable {
                         //increase the vote counter for the new voteOption
                         this.jedis.hincrBy(key, String.valueOf(newVoteOptionId), 1);
                     }
-                    return v;
-                } else {
-                    return null;
+                    break;
                 }
             }
         }
-        //TODO send message to
-        return null;
     }
 
     private boolean voteOptionExists(Integer pollId, Integer newVoteOptionId) {
@@ -211,7 +189,7 @@ public class PollManager implements Serializable {
         }
     }
 
-    public Poll deletePollById(Integer pollId) {
+    public void deletePollById(Integer pollId) {
         //delete all votes from voteManager
         this.voteManager.remove(pollId);
         // delete the poll itself
@@ -222,8 +200,6 @@ public class PollManager implements Serializable {
         if (checkRedis(key)) {
             this.jedis.del(key);
         }
-        //TODO delete queue
-        return deletedPoll;
     }
 
     /**
@@ -241,7 +217,7 @@ public class PollManager implements Serializable {
         HashSet<Vote> votes = voteManager.get(pollId);
         //Check if there are no votes in the poll.
         if (votes == null) {
-            return new HashMap<VoteOption, Integer>();
+            return new HashMap<>();
         }
 
         String key = "poll:" + pollId;
@@ -278,15 +254,20 @@ public class PollManager implements Serializable {
      * Maps voteOptionId to the voteOption object, and its amount of votes
      *
      * @param counter Map consisting of voteOptionId and its total votes
-     * @param pollId id of the poll
+     * @param pollId  id of the poll
      * @return a Map which has VoteOption and its total votes
      */
     private HashMap<VoteOption, Integer> mapToVoteOption(HashMap<Integer, Integer> counter, Integer pollId) {
         if (counter == null || counter.isEmpty()) {
-            return new HashMap<VoteOption, Integer>();
+            return new HashMap<>();
+        }
+        Poll poll = this.pollManager.get(pollId);
+        if (poll == null || poll.getOptions() == null) {
+            return new HashMap<>();
         }
         HashMap<VoteOption, Integer> result = new HashMap<>();
-        List<VoteOption> voteOptionList = this.pollManager.get(pollId).getOptions();
+
+        List<VoteOption> voteOptionList = poll.getOptions();
         for (VoteOption vo : voteOptionList) {
             Integer counts = counter.get(vo.getId());
             //If the VoteOption doesn't have any votes, we can't have it be displayed null

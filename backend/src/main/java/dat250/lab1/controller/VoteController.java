@@ -2,6 +2,7 @@ package dat250.lab1.controller;
 
 import dat250.lab1.model.PollManager;
 import dat250.lab1.model.Vote;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -11,14 +12,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+
 @CrossOrigin
 @RestController
+@NoArgsConstructor
 public class VoteController {
+    @Autowired
     private PollManager pollManager;
 
-    public VoteController(@Autowired PollManager pollManager) {
-        this.pollManager = pollManager;
-    }
 
     @GetMapping("votes/polls/{pollId}")
     public ResponseEntity<HashSet<Vote>> getVotesByPoll(@PathVariable("pollId") Integer pollId) {
