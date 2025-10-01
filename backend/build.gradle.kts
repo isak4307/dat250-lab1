@@ -13,6 +13,7 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+
 }
 
 repositories {
@@ -48,6 +49,9 @@ tasks.test {
 }
 tasks.jacocoTestReport {
     dependsOn(tasks.test) // tests are required to run before generating the report
+}
+tasks.withType<JavaCompile>(){
+    options.compilerArgs.addAll(listOf("-parameters"))
 }
 jacoco {
     toolVersion = "0.8.13"

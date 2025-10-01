@@ -1,6 +1,5 @@
 package dat250.lab1.messager;
 
-import dat250.lab1.model.Poll;
 import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

@@ -21,7 +21,7 @@ public class VoteController {
     }
 
     @GetMapping("votes/polls/{pollId}")
-    public ResponseEntity<HashSet<Vote>> getVotesByPoll(@PathVariable Integer pollId) {
+    public ResponseEntity<HashSet<Vote>> getVotesByPoll(@PathVariable("pollId") Integer pollId) {
         if (this.pollManager.getPollById(pollId) == null) {
             return ResponseEntity.badRequest().build();
         }
@@ -34,7 +34,7 @@ public class VoteController {
     }
 
     @GetMapping("votes/recent/{userId}")
-    public ResponseEntity<Vote> getUserVotes(@PathVariable Integer userId) {
+    public ResponseEntity<Vote> getUserVotes(@PathVariable("userId") Integer userId) {
         if (this.pollManager.getUserById(userId) == null) {
             return ResponseEntity.badRequest().build();
         }

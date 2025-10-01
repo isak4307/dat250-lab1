@@ -33,7 +33,7 @@ public class PollController {
     }
 
     @GetMapping("/polls/{pollId}/result")
-    public ResponseEntity<HashMap<VoteOption, Integer>> getResultOfPoll(@PathVariable Integer pollId) {
+    public ResponseEntity<HashMap<VoteOption, Integer>> getResultOfPoll(@PathVariable("pollId") Integer pollId) {
         Poll poll = this.pollManager.getPollById(pollId);
         if (poll == null) {
             return ResponseEntity.badRequest().build();
@@ -54,7 +54,7 @@ public class PollController {
     }
 
     @PostMapping("/polls/{creatorId}")
-    public ResponseEntity<Poll> createPoll(@PathVariable Integer creatorId, @RequestBody Poll poll) {
+    public ResponseEntity<Poll> createPoll(@PathVariable("creatorId") Integer creatorId, @RequestBody Poll poll) {
         List<VoteOption> voteOptions = poll.getOptions();
         if (samePollQandC(poll, creatorId) || voteOptions.size() < 2) {
             return ResponseEntity.badRequest().build();
@@ -79,7 +79,7 @@ public class PollController {
     }
 
     @PostMapping("/polls/{pollId}/votes")
-    public ResponseEntity<Vote> createVote(@PathVariable int pollId, @RequestBody Vote vote) {
+    public ResponseEntity<Vote> createVote(@PathVariable("pollId") Integer pollId, @RequestBody Vote vote) {
         //Check that the voteOption and user id exists.
         if (this.pollManager.getPollById(pollId) == null
                 || this.pollManager.getUserById(vote.getUserId()) == null
@@ -102,7 +102,7 @@ public class PollController {
 
 
     @PutMapping("polls/{pollId}/changes/{userId}/newVoteOptions/{voteOption}")
-    public ResponseEntity<Vote> changeVote(@PathVariable int pollId, @PathVariable int userId, @PathVariable int voteOption) {
+    public ResponseEntity<Vote> changeVote(@PathVariable("pollId") Integer pollId, @PathVariable("userId") Integer userId, @PathVariable("voteOption") Integer voteOption) {
         if (this.pollManager.getUserById(userId) != null && this.pollManager.getPollById(pollId) != null) {
             Vote changedVote = this.pollManager.changeVote(pollId, userId, voteOption);
             if (changedVote != null) {

@@ -37,9 +37,8 @@ public class Consumer {
         if (msg.getPollId() != null) {
             switch (msg.getAction()) {
                 case CREATEVOTE:
-                    if (msg.getVote() != null) {
                         this.pollManager.createVote(msg.getPollId(), msg.getVote());
-                    }
+
                     break;
                 case CHANGEVOTE:
                     if (msg.getUserId() != null && msg.getVoteOptionId() != null)
