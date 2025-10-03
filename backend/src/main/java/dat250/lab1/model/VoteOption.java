@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Objects;
+
 @Entity
 @Table
 @Getter
@@ -29,6 +30,7 @@ public class VoteOption implements Serializable {
         this.caption = caption;
         this.presentationOrder = presentationOrder;
     }
+
     public void setId(Integer id) {
         if (this.id == null) {
             this.id = id;
@@ -40,6 +42,7 @@ public class VoteOption implements Serializable {
             this.poll = poll;
         }
     }
+
     @Override
     public String toString() {
         return "{" +

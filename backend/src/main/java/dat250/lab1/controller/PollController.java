@@ -20,7 +20,7 @@ public class PollController {
     @Autowired
     private Producer producer;
     @Autowired
-    private MessagerSetup messagerSetup;
+    private MessageSetup messageSetup;
     @Autowired
     private Consumer consumer;
 
@@ -40,11 +40,11 @@ public class PollController {
     }
 
     /**
-     * Check if the poll has already been created with the same question and the same creator
+     * Check if the {@link Poll} has already been created with the same question and the same creator
      *
-     * @param poll the poll it attempts to create
+     * @param poll the {@link Poll} it attempts to create
      * @param cId  the creator id
-     * @return whether the poll has been created by the same user and if the question are same
+     * @return whether the {@link Poll} has been created by the same user and if the question are same
      */
     private boolean samePollQandC(Poll poll, Integer cId) {
         HashSet<Poll> polls = this.pollManager.getPolls();
@@ -78,13 +78,13 @@ public class PollController {
     }
 
     /**
-     * Register a topic that is linked to the created poll
+     * Register a topic that is linked to the created {@link Poll}
      *
-     * @param poll The poll which should be linked to that topic
+     * @param poll The {@link Poll} which should be linked to that topic
      */
     private void registerTopic(Poll poll) {
-        String queueName = "poll-" + poll.getId() + "-queue";
-        this.messagerSetup.setupMessagerPoll(poll.getId());
+        String queueName = messageSetup.getEXCHANGENAME() + poll.getId() + messageSetup.getQUEUENAME();
+        this.messageSetup.setupMessagePoll(poll.getId());
         consumer.receiveMessage(queueName);
     }
 

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+
 @Entity
 @Table
 @Getter
@@ -32,7 +33,7 @@ public class Poll implements Serializable {
     private List<VoteOption> options;
     // A user can have many Polls, but a poll can only belong to one creator
     @ManyToOne
-    @JoinColumn(name="creator_id")
+    @JoinColumn(name = "creator_id")
     @JsonBackReference
     private User creator;
 
@@ -50,7 +51,7 @@ public class Poll implements Serializable {
     }
 
     /**
-     * Sorts the voteOptions on by the presentationOrder
+     * Sorts the {@link VoteOption}  by the order of presentation
      */
     public void sortVoteOptions() {
         this.options = new ArrayList<>(this.options.stream().sorted(Comparator.comparing(VoteOption::getPresentationOrder)).toList());
@@ -66,12 +67,14 @@ public class Poll implements Serializable {
                 ",\n options:" + options +
                 '}';
     }
+
     public VoteOption addVoteOption(String caption) {
-       VoteOption vo = new VoteOption(caption,this.options.size());
-       vo.setPoll(this);
-       this.options.add(vo);
-       return vo;
+        VoteOption vo = new VoteOption(caption, this.options.size());
+        vo.setPoll(this);
+        this.options.add(vo);
+        return vo;
     }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

@@ -1,6 +1,7 @@
 package dat250.lab1.actions;
 
 import dat250.lab1.model.User;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -9,13 +10,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@NoArgsConstructor
 @Component
 public class UserActions {
     private final AtomicInteger userIdCounter = new AtomicInteger(0);
     private Map<Integer, User> users = new HashMap<>();
 
-    public UserActions() {
-    }
 
     public Collection<User> getUsers() {
         return users.values();

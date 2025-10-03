@@ -37,22 +37,23 @@ public class User implements Serializable {
     }
 
     /**
-     * Creates a poll directly from the user.
-     * @param question The question of the poll
-     * @return The created Poll object
+     * Creates a {@link Poll} directly from the user.
+     *
+     * @param question The question of the {@link Poll}
+     * @return The created {@link Poll} object
      */
     public Poll createPoll(String question) {
         int yearSeconds = 31556926;
-        Poll newPoll = new Poll(question, Instant.now().plusSeconds( yearSeconds), Instant.now(), new ArrayList<>());
+        Poll newPoll = new Poll(question, Instant.now().plusSeconds(yearSeconds), Instant.now(), new ArrayList<>());
         newPoll.setCreator(this);
         this.created.add(newPoll);
         return newPoll;
     }
 
     /**
-     * Creates a new Vote for a given VoteOption in a Poll
-     * and returns the Vote as an object.
-     * This way to vote creates a new Vote object that takes the option object instead of id
+     * Creates a new {@link Vote} for a given {@link VoteOption} in a {@link Poll}
+     * and returns the {@link Vote} as an object.
+     * This way to vote creates a new {@link Vote} object that takes the option object instead of id
      */
     public Vote voteFor(VoteOption option) {
         return new Vote(this.id, option, Instant.now());

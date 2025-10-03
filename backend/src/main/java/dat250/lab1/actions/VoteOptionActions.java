@@ -2,16 +2,15 @@ package dat250.lab1.actions;
 
 import dat250.lab1.model.Poll;
 import dat250.lab1.model.VoteOption;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+@NoArgsConstructor
 @Component
 public class VoteOptionActions {
     private final AtomicInteger voteOptionIdCounter = new AtomicInteger(0);
-
-    public VoteOptionActions() {
-    }
 
     public void setVoteOptionId(VoteOption vo, Poll poll) {
         if (vo.getId() == null) {

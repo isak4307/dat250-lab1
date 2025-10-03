@@ -2,7 +2,7 @@ package dat250.lab1.controller;
 
 
 import dat250.lab1.messager.MessageAction;
-import dat250.lab1.messager.MessagerSetup;
+import dat250.lab1.messager.MessageSetup;
 import dat250.lab1.messager.Producer;
 import dat250.lab1.messager.VoteMessage;
 import dat250.lab1.model.PollManager;
@@ -20,7 +20,7 @@ import java.util.Objects;
 @NoArgsConstructor
 public class UserController {
     @Autowired
-    private MessagerSetup messagerSetup;
+    private MessageSetup messageSetup;
     @Autowired
     private Producer producer;
     @Autowired

@@ -25,7 +25,9 @@ public class PollManager implements Serializable {
     // integer = poll ID
     private final HashMap<Integer, HashSet<Vote>> voteManager = new HashMap<>();
     private final UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
-
+    private final String POLLKEY = "poll:";
+    private final Integer TTLMIN = 2;
+    private final Integer TTLSEC;
 
     public PollManager(@Autowired UserActions userActions,
                        @Autowired PollActions pollActions,
@@ -35,6 +37,7 @@ public class PollManager implements Serializable {
         this.pollActions = pollActions;
         this.voteOptionActions = voteOptionActions;
         this.voteActions = voteActions;
+        this.TTLSEC = 60 * TTLMIN;
     }
 
     public HashSet<User> getUsers() {
@@ -104,7 +107,7 @@ public class PollManager implements Serializable {
                 HashSet<Vote> voteSet = this.voteManager.get(pollId);
                 voteSet.add(vote);
                 //update the vote counter in redis
-                String key = "poll:" + pollId;
+                String key = POLLKEY + pollId;
                 if (checkRedis(key)) {
                     this.jedis.hincrBy(key, String.valueOf(vote.getVoteOptionId()), 1);
 
@@ -126,7 +129,7 @@ public class PollManager implements Serializable {
                 if (voteOptionExists(pollId, newVoteOptionId)) {
                     Integer oldVoteOptionId = v.getVoteOptionId();
                     v.setVoteOptionId(newVoteOptionId);
-                    String key = "poll:" + pollId;
+                    String key = POLLKEY + pollId;
                     //Only update the cache if the result exist in the cache
                     if (checkRedis(key)) {
                         //Remove the vote from the voteOption
@@ -193,25 +196,14 @@ public class PollManager implements Serializable {
         //delete all votes from voteManager
         this.voteManager.remove(pollId);
         // delete the poll itself
-        Poll deletedPoll = this.pollManager.get(pollId);
         this.pollManager.remove(pollId);
         //delete the poll in redis if it does exist
-        String key = "poll:" + pollId;
+        String key = POLLKEY + pollId;
         if (checkRedis(key)) {
             this.jedis.del(key);
         }
     }
 
-    /**
-     * Check if the cache contains the poll object with its results
-     *
-     * @param key the key to indicate which poll it is about
-     * @return True if it exists in the cache
-     */
-    private Boolean checkRedis(String key) {
-        Map<String, String> jsonCounter = this.jedis.hgetAll(key);
-        return (jsonCounter != null && !jsonCounter.isEmpty());
-    }
 
     public HashMap<VoteOption, Integer> voteCounter(Integer pollId) {
         HashSet<Vote> votes = voteManager.get(pollId);
@@ -220,7 +212,7 @@ public class PollManager implements Serializable {
             return new HashMap<>();
         }
 
-        String key = "poll:" + pollId;
+        String key = POLLKEY + pollId;
         //Check if the cache contains the votes for the poll
         HashMap<Integer, Integer> counter = new HashMap<>();
         if (checkRedis(key)) {
@@ -242,29 +234,35 @@ public class PollManager implements Serializable {
                 redisMap.put(String.valueOf(optionId), String.valueOf(counter.get(optionId)));
             }
             //Store it in the cache currently 2 min ttl
-            int ttlMin = 2;
-            int ttlSec = 60 * ttlMin;
             jedis.hset(key, redisMap);
-            jedis.expire(key, ttlSec);
+            jedis.expire(key, TTLSEC);
         }
         return mapToVoteOption(counter, pollId);
     }
 
     /**
-     * Maps voteOptionId to the voteOption object, and its amount of votes
+     * Check if the cache contains the {@link Poll} object with its results
+     *
+     * @param key the key to indicate which {@link Poll} it is about
+     * @return True if it exists in the cache
+     */
+    private Boolean checkRedis(String key) {
+        Map<String, String> jsonCounter = this.jedis.hgetAll(key);
+        return (jsonCounter != null && !jsonCounter.isEmpty());
+    }
+
+    /**
+     * Maps voteOptionId to the {@link VoteOption} object, and its amount of votes
      *
      * @param counter Map consisting of voteOptionId and its total votes
-     * @param pollId  id of the poll
-     * @return a Map which has VoteOption and its total votes
+     * @param pollId  id of the {@link Poll}
+     * @return a Map which has {@link VoteOption} and its total votes
      */
     private HashMap<VoteOption, Integer> mapToVoteOption(HashMap<Integer, Integer> counter, Integer pollId) {
         if (counter == null || counter.isEmpty()) {
             return new HashMap<>();
         }
         Poll poll = this.pollManager.get(pollId);
-        if (poll == null || poll.getOptions() == null) {
-            return new HashMap<>();
-        }
         HashMap<VoteOption, Integer> result = new HashMap<>();
 
         List<VoteOption> voteOptionList = poll.getOptions();

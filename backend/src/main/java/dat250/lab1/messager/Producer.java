@@ -11,15 +11,16 @@ public class Producer {
     @Autowired
     private RabbitTemplate template;
     @Autowired
-    private MessagerSetup messagerSetup;
+    private MessageSetup messageSetup;
     @Autowired
     private ObjectMapper objectMapper;
 
     public void sendMessage(Integer pollId, VoteMessage message) {
         try {
-            String obj = objectMapper.writeValueAsString(message);
-            String exchangeName = messagerSetup.setupMessagerPoll(pollId);
-            this.template.convertAndSend(exchangeName, "", obj);
+            // Serialize the VoteMessage object before sending it in the appropriate exchange
+            String json = objectMapper.writeValueAsString(message);
+            String exchangeName = messageSetup.setupMessagePoll(pollId);
+            this.template.convertAndSend(exchangeName, "", json);
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);

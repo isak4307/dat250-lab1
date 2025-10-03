@@ -33,11 +33,16 @@ public class Consumer {
         container.start();
     }
 
+    /**
+     * Execute different actions depending on what the {@link MessageAction} is
+     *
+     * @param msg containing the {@link MessageAction} and the appropriate parameters
+     */
     private void performAction(VoteMessage msg) {
         if (msg.getPollId() != null) {
             switch (msg.getAction()) {
                 case CREATEVOTE:
-                    if(msg.getVote()!=null)
+                    if (msg.getVote() != null)
                         this.pollManager.createVote(msg.getPollId(), msg.getVote());
                     break;
                 case CHANGEVOTE:

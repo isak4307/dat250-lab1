@@ -1,17 +1,24 @@
 package dat250.lab1.messager;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
+@Getter
+@Setter
+@NoArgsConstructor
 @Component
-public class MessagerSetup {
+public class MessageSetup {
+    private final String EXCHANGENAME = "poll-";
+    private final String QUEUENAME = "-queue";
     @Autowired
     private AmqpAdmin amqpAdmin;
 
-    public String setupMessagerPoll(Integer pollId) {
-        String exchangeName = "poll-" + pollId;
-        String queueName = "poll-" + pollId + "-queue";
+    public String setupMessagePoll(Integer pollId) {
+        String exchangeName = EXCHANGENAME + pollId;
+        String queueName = EXCHANGENAME + pollId + QUEUENAME;
 
         TopicExchange exchange = new TopicExchange(exchangeName);
         Queue queue = new Queue(queueName);
